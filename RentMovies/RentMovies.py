@@ -61,7 +61,7 @@ class NewReleasePrice(Price):
         return Movie.NEW_RELEASE
 
     def getCharge(self, rentedDays):
-        return rentedDays *3
+        return rentedDays * 3
 
     def getFrequentRentPoints(self, rentedDays):
         if rentedDays > 1:
@@ -80,12 +80,12 @@ class Movie(object):
     def __init__(self, title, movieType):
         self._price = None
         self._title = title
-        self.setPrice(movieType)
+        self._setPrice(movieType)
 
     def getTitle(self):
         return self._title
 
-    def setPrice(self, movieType):
+    def _setPrice(self, movieType):
         if movieType == Movie.REGULAR:
             self._price = RegularPrice()
         elif movieType == Movie.CHILDRENS:
@@ -175,13 +175,16 @@ def main() :
     register_signal()
 
     beva = Movie("Beva", Movie.CHILDRENS)
+    finalDest = Movie("Final Destination", Movie.REGULAR)
     kungFuPanda = Movie("Kung Fu Panda", Movie.NEW_RELEASE)
     rentBeva = Rental(beva, 7)
+    rentFinalDest = Rental(finalDest, 1)
     rentKungFuPanda = Rental(kungFuPanda, 3)
     customer = Customer("eyotang")
 
     customer.addRental(rentBeva)
     customer.addRental(rentKungFuPanda)
+    customer.addRental(rentFinalDest)
     print customer.statement()
 
     return 0
