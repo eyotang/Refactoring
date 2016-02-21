@@ -80,14 +80,10 @@ class Movie(object):
     def __init__(self, title, movieType):
         self._price = None
         self._title = title
-        self._movieType = movieType
         self.setPrice(movieType)
 
     def getTitle(self):
         return self._title
-
-    def getType(self):
-        return self._movieType
 
     def setPrice(self, movieType):
         if movieType == Movie.REGULAR:
