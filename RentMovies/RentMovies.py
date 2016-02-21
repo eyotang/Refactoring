@@ -8,43 +8,94 @@ import re, sys, os, traceback, signal
 
 from abc import ABCMeta, abstractmethod
 
-
-class Movie(object):
+class Price(object):
     '''
-    Class movie
+    Abstract class price
     '''
-    def __init__(self, title, movieType):
-        self._price = {}
-        self._price["REGULAR"]     = 0
-        self._price["CHILDRENS"]   = 2
-        self._price["NEW_RELEASE"] = 1
+    __metaclass__ = ABCMeta
+    def __init__(self):
+        pass
 
-        self._title = title
-        self._movieType = movieType
-
-    def getType(self):
-        return self._movieType
-
-    def setType(self, movieType):
-        self._movieType = movieType
-
-    def getTitle(self):
-        return self._title
+    @abstractmethod
+    def getPriceType(self):
+        pass
 
     def getCharge(self, rentedDays):
         thisAmount = 0
-        movieType = self.getType()
-        if movieType == "REGULAR":
+        movieType = self.getPriceType()
+        if movieType == Movie.REGULAR:
             if rentedDays > 2:
                 thisAmount += (rentedDays - 2) * 1.5
-        elif movieType == "NEW_RELEASE":
+        elif movieType == Movie.NEW_RELEASE:
             thisAmount += rentedDays * 3
-        elif movieType == "CHILDRENS":
+        elif movieType == Movie.CHILDRENS:
             thisAmount += 1.5
             if rentedDays > 3:
                 thisAmount += (rentedDays -3) * 1.5
 
         return thisAmount
+
+
+class ChildrensPrice(Price):
+    '''
+    Price of childrens book
+    '''
+    def getPriceType(self):
+        return Movie.CHILDRENS
+
+class RegularPrice(Price):
+    '''
+    Price of regular book
+    '''
+    def getPriceType(self):
+        return Movie.REGULAR
+
+class NewReleasePrice(Price):
+    '''
+    Price of new release book
+    '''
+    def getPriceType(self):
+        return Movie.NEW_RELEASE
+
+
+class Movie(object):
+    '''
+    Class movie
+    '''
+    REGULAR     = "REGULAR"
+    CHILDRENS   = "CHILDRENS"
+    NEW_RELEASE = "NEW_RELEASE"
+
+    def __init__(self, title, movieType):
+        self._price = None
+        self._title = title
+        self._movieType = movieType
+        self.setPrice(movieType)
+
+    def getTitle(self):
+        return self._title
+
+    def getType(self):
+        return self._movieType
+
+    def setPrice(self, movieType):
+        if movieType == Movie.REGULAR:
+            self._price = RegularPrice()
+        elif movieType == Movie.CHILDRENS:
+            self._price = ChildrensPrice()
+        elif movieType == Movie.NEW_RELEASE:
+            self._price = NewReleasePrice()
+        else:
+            raise Exception("Incorrect movie type")
+
+    def getCharge(self, rentedDays):
+        return self._price.getCharge(rentedDays)
+
+    def getFrequentRentPoints(self, rentedDays):
+        if self.getType() == Movie.NEW_RELEASE and rentedDays > 1:
+            return 2
+        else:
+            return 1
 
 
 class Rental(object):
@@ -66,12 +117,8 @@ class Rental(object):
         return self.getMovie().getCharge(rentedDays)
 
     def getFrequentRentPoints(self):
-        movieType = self.getMovie().getType()
         rentedDays = self.getRentDays()
-        if movieType == "NEW_RELEASE" and rentedDays > 1:
-            return 2
-        else:
-            return 1
+        return self.getMovie().getFrequentRentPoints(rentedDays)
 
 
 class Customer(object):
