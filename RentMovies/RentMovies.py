@@ -31,6 +31,21 @@ class Movie(object):
     def getTitle(self):
         return self._title
 
+    def getCharge(self, rentedDays):
+        thisAmount = 0
+        movieType = self.getType()
+        if movieType == "REGULAR":
+            if rentedDays > 2:
+                thisAmount += (rentedDays - 2) * 1.5
+        elif movieType == "NEW_RELEASE":
+            thisAmount += rentedDays * 3
+        elif movieType == "CHILDRENS":
+            thisAmount += 1.5
+            if rentedDays > 3:
+                thisAmount += (rentedDays -3) * 1.5
+
+        return thisAmount
+
 
 class Rental(object):
     '''
@@ -45,6 +60,18 @@ class Rental(object):
 
     def getRentDays(self):
         return self._rentDays
+
+    def getCharge(self):
+        rentedDays = self.getRentDays()
+        return self.getMovie().getCharge(rentedDays)
+
+    def getFrequentRentPoints(self):
+        movieType = self.getMovie().getType()
+        rentedDays = self.getRentDays()
+        if movieType == "NEW_RELEASE" and rentedDays > 1:
+            return 2
+        else:
+            return 1
 
 
 class Customer(object):
@@ -61,40 +88,26 @@ class Customer(object):
     def getName(self):
         return self._name
 
-    def amountFor(self, rent):
-        thisAmount = 0
-        movieType = rent.getMovie().getType()
-        rentedDays = rent.getRentDays()
-        if movieType == "REGULAR":
-            if rentedDays > 2:
-                thisAmount += (rentedDays - 2) * 1.5
-        elif movieType == "NEW_RELEASE":
-            thisAmount += rentedDays * 3
-        elif movieType == "CHILDRENS":
-            thisAmount += 1.5
-            if rentedDays > 3:
-                thisAmount += (rentedDays -3) * 1.5
+    def getTotalCharge(self):
+        result = 0
+        for rent in self._rentals:
+            result += rent.getCharge()
 
-        return thisAmount
+        return result
 
+    def getFrequentRentPoints(self):
+        result = 0
+        for rent in self._rentals:
+            result += rent.getFrequentRentPoints()
+
+        return result
 
     def statement(self):
-        totalAmount = 0
-        frequentRentPoints = 0
         result = "Rent result for " + self.getName() + ":\n"
         for rent in self._rentals:
-            thisAmount = 0
-            movieType = rent.getMovie().getType()
-            rentedDays = rent.getRentDays()
-            thisAmount = self.amountFor(rent)
-            frequentRentPoints += 1
-            if movieType == "NEW_RELEASE" and rentedDays > 1:
-                frequentRentPoints += 1
-            result += "\t" + rent.getMovie().getTitle() + "\t" + str(thisAmount) + "\n"
-            totalAmount += thisAmount
-
-        result += "Amount owed is " + str(totalAmount) + "\n"
-        result += "You earned " + str(frequentRentPoints) + " frequent rent points"
+            result += "\t" + rent.getMovie().getTitle() + "\t" + str(rent.getCharge()) + "\n"
+        result += "Amount owed is " + str(self.getTotalCharge()) + "\n"
+        result += "You earned " + str(self.getFrequentRentPoints()) + " frequent rent points"
 
         return result
 
