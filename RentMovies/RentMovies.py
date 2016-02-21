@@ -20,21 +20,12 @@ class Price(object):
     def getPriceType(self):
         pass
 
+    @abstractmethod
     def getCharge(self, rentedDays):
-        thisAmount = 0
-        movieType = self.getPriceType()
-        if movieType == Movie.REGULAR:
-            if rentedDays > 2:
-                thisAmount += (rentedDays - 2) * 1.5
-        elif movieType == Movie.NEW_RELEASE:
-            thisAmount += rentedDays * 3
-        elif movieType == Movie.CHILDRENS:
-            thisAmount += 1.5
-            if rentedDays > 3:
-                thisAmount += (rentedDays -3) * 1.5
+        pass
 
-        return thisAmount
-
+    def getFrequentRentPoints(self, rentedDays):
+        return 1
 
 class ChildrensPrice(Price):
     '''
@@ -43,12 +34,24 @@ class ChildrensPrice(Price):
     def getPriceType(self):
         return Movie.CHILDRENS
 
+    def getCharge(self, rentedDays):
+        result = 1.5
+        if rentedDays > 3:
+            result += (rentedDays -3) * 1.5
+        return result
+
 class RegularPrice(Price):
     '''
     Price of regular book
     '''
     def getPriceType(self):
         return Movie.REGULAR
+
+    def getCharge(self, rentedDays):
+        result = 2
+        if rentedDays > 2:
+            result += (rentedDays - 2) * 1.5
+        return result
 
 class NewReleasePrice(Price):
     '''
@@ -57,6 +60,14 @@ class NewReleasePrice(Price):
     def getPriceType(self):
         return Movie.NEW_RELEASE
 
+    def getCharge(self, rentedDays):
+        return rentedDays *3
+
+    def getFrequentRentPoints(self, rentedDays):
+        if rentedDays > 1:
+            return 2
+        else:
+            return 1
 
 class Movie(object):
     '''
@@ -92,10 +103,7 @@ class Movie(object):
         return self._price.getCharge(rentedDays)
 
     def getFrequentRentPoints(self, rentedDays):
-        if self.getType() == Movie.NEW_RELEASE and rentedDays > 1:
-            return 2
-        else:
-            return 1
+        return self._price.getFrequentRentPoints(rentedDays)
 
 
 class Rental(object):
@@ -170,8 +178,8 @@ def register_signal() :
 def main() :
     register_signal()
 
-    beva = Movie("Beva", "CHILDRENS")
-    kungFuPanda = Movie("Kung Fu Panda", "NEW_RELEASE")
+    beva = Movie("Beva", Movie.CHILDRENS)
+    kungFuPanda = Movie("Kung Fu Panda", Movie.NEW_RELEASE)
     rentBeva = Rental(beva, 7)
     rentKungFuPanda = Rental(kungFuPanda, 3)
     customer = Customer("eyotang")
